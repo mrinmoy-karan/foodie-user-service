@@ -22,6 +22,8 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter; // Inject your filter here
 
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
