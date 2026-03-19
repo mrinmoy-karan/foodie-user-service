@@ -2,8 +2,11 @@ package com.foodie.userservice.service;
 
 import com.foodie.userservice.dto.LoginRequest;
 import com.foodie.userservice.dto.UserRegistrationRequest;
+import com.foodie.userservice.models.Role;
 import com.foodie.userservice.models.User;
+import com.foodie.userservice.repository.RoleRepository;
 import com.foodie.userservice.repository.UserRepository;
+import com.foodie.userservice.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final JwtService jwtService;
 
     public String registerUser(UserRegistrationRequest request) {
         // 1. Check if email exists
@@ -28,6 +33,11 @@ public class UserService {
         user.setMobile(request.mobile());
         user.setPassword(passwordEncoder.encode(request.password())); // Hashing
 
+        Role defaultRole = roleRepository.findByName("ROLE_USER")
+                .orElseThrow(() -> new RuntimeException("Error: Default Role 'USER' not found in database."));
+
+        user.getRoles().add(defaultRole);
+
         userRepository.save(user);
         return "User registered successfully!";
     }
@@ -36,9 +46,11 @@ public class UserService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+
+
         // Match raw password with hashed password
         if (passwordEncoder.matches(request.password(), user.getPassword())) {
-            return "Login Successful! Welcome " + user.getName();
+            return jwtService.generateToken(user);
         } else {
             return "Invalid Credentials";
         }

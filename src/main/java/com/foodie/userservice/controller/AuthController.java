@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,8 +44,9 @@ public class AuthController {
 
         if (auth.isAuthenticated()) {
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.email());
+            UserDetails userDetails = (UserDetails) auth.getPrincipal();
             return ResponseEntity.ok(AuthResponse.builder()
-                    .accessToken(jwtService.generateToken(request.email(), auth.getAuthorities()))
+                    .accessToken(jwtService.generateToken(userDetails))
                     .token(refreshToken.getToken()).build());
         }
         return ResponseEntity.status(401).body("Invalid Credentials");
