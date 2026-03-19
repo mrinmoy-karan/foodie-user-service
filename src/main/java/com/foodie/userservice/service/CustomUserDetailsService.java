@@ -19,8 +19,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        User user = userRepository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found or account disabled"));
 
         // Convert your custom Role objects to Spring Authorities
         List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
