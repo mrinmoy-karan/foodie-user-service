@@ -24,12 +24,20 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter; // Inject your filter here
     private final CustomAuthenticationEntryPoint authEntryPoint;
 
+    private static final String[] SWAGGER_WHITELIST = {
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Allow signup/login
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception->

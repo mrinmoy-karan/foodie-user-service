@@ -1,6 +1,7 @@
 package com.foodie.userservice.controller;
 
 import com.foodie.userservice.dto.UserResponseDTO;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Tag(name = "Admin Management", description = "Restricted APIs for users with ROLE_ADMIN")
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
