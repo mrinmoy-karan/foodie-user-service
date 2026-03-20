@@ -1,0 +1,39 @@
+# --- BUILD ARTIFACTS ---
+# Ignore the local build folder. Render will build its own target/ folder.
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# --- SECRETS & PRIVACY ---
+# NEVER push these to the internet. They contain your office/local passwords.
+.env
+*.log
+local.properties
+.DS_Store
+
+# --- IDE SETTINGS ---
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# VS Code
+.vscode/
+.history/
+
+# Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# --- MAVEN WRAPPERS ---
+# We MUST keep these so Render can use ./mvnw to build your code.
+!mvnw
+!mvnw.cmd
+mysql_data/
