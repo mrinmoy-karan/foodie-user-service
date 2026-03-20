@@ -8,6 +8,7 @@ import com.foodie.userservice.models.RefreshToken;
 import com.foodie.userservice.security.JwtService;
 import com.foodie.userservice.service.RefreshTokenService;
 import com.foodie.userservice.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,12 +33,12 @@ public class AuthController {
 
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<String> signup(@Valid @RequestBody UserRegistrationRequest request) {
         return ResponseEntity.ok(userService.registerUser(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
 
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
