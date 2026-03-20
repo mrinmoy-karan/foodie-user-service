@@ -2,6 +2,7 @@ package com.foodie.userservice.service;
 
 import com.foodie.userservice.dto.LoginRequest;
 import com.foodie.userservice.dto.UserRegistrationRequest;
+import com.foodie.userservice.exception.UserNotFoundException;
 import com.foodie.userservice.models.Role;
 import com.foodie.userservice.models.User;
 import com.foodie.userservice.repository.RoleRepository;
@@ -54,5 +55,15 @@ public class UserService {
         } else {
             return "Invalid Credentials";
         }
+    }
+
+    public void deactivateUser(Long id) {
+        // 1. Check if user exists first
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException("User not found: " + id);
+        }
+
+        // 2. Call your custom @Modifying query
+        userRepository.softDelete(id);
     }
 }

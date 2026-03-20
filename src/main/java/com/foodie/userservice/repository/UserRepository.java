@@ -23,5 +23,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @Query("UPDATE User u SET u.isActive = false WHERE u.id = :id")
     void softDelete(Long id);
 
+
+
     Optional<User> findByEmailAndIsActiveTrue(String email);
 }
