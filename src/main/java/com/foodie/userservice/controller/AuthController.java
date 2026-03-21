@@ -1,9 +1,6 @@
 package com.foodie.userservice.controller;
 
-import com.foodie.userservice.dto.AuthResponse;
-import com.foodie.userservice.dto.LoginRequest;
-import com.foodie.userservice.dto.RefreshTokenRequest;
-import com.foodie.userservice.dto.UserRegistrationRequest;
+import com.foodie.userservice.dto.*;
 import com.foodie.userservice.models.RefreshToken;
 import com.foodie.userservice.security.JwtService;
 import com.foodie.userservice.service.RefreshTokenService;
@@ -33,24 +30,27 @@ public class AuthController {
 
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@Valid @RequestBody UserRegistrationRequest request) {
-        return ResponseEntity.ok(userService.registerUser(request));
+    public ResponseEntity<?> signup(@Valid @RequestBody UserRegistrationRequest request) {
+        String result = userService.registerUser(request);
+       return ResponseEntity.ok(ApiResponse.success("User registered successfully",result));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+        // This line triggers CustomUserDetailsService and checks password automatically
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password()));
 
-        if (auth.isAuthenticated()) {
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.email());
-            UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            return ResponseEntity.ok(AuthResponse.builder()
-                    .accessToken(jwtService.generateToken(userDetails))
-                    .token(refreshToken.getToken()).build());
-        }
-        return ResponseEntity.status(401).body("Invalid Credentials");
+        // If we reach here, authentication was successful
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(request.email());
+
+        AuthResponse authResponse = AuthResponse.builder()
+                .accessToken(jwtService.generateToken(userDetails))
+                .token(refreshToken.getToken())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success("Login successful", authResponse));
     }
 
     @PostMapping("/logout")

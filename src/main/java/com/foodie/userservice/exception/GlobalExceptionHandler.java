@@ -1,6 +1,6 @@
 package com.foodie.userservice.exception;
 
-import com.foodie.userservice.dto.ErrorResponse;
+import com.foodie.userservice.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -8,8 +8,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,63 +18,56 @@ public class GlobalExceptionHandler {
 
     // 1. Handle 403 Forbidden (Security Access Denied)
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
-        ErrorResponse error = new ErrorResponse(
-            "Forbidden",
-            "Do not have access to the resource",
-            403
-        );
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "Forbidden", "You do not have permission to access this resource");
     }
 
-    // 2. Handle User Not Found (Your custom exception)
+    // 2. Handle User Not Found (Custom Exception)
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
-        ErrorResponse error = new ErrorResponse(
-            "Not Found",
-            ex.getMessage(),
-            404
-        );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
     }
 
-    // 3. General Handler for "Everything Else"
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
-        ErrorResponse error = new ErrorResponse(
-            "Internal Server Error",
-            "An unexpected error occurred: " + ex.getMessage(),
-            500
-        );
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
+    // 3. Handle Login Failures (Bad Credentials)
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
-        ErrorResponse error = new ErrorResponse(
-                "Unauthorized",
-                "Invalid email or password", // Or "Invalid or missing security key" to match your test
-                401
-        );
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
+        return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Invalid email or password");
     }
 
+    // 4. Handle Validation Errors (Email format, Mobile digits, etc.)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", "Bad Request");
-        body.put("code", 400);
-
-        // Extracting field-specific errors
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 fieldErrors.put(error.getField(), error.getDefaultMessage())
         );
 
-        body.put("errors", fieldErrors); // Nesting the errors makes it cleaner for Frontend
+        ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
+                .status("Error")
+                .message("Validation Failed")
+                .code(HttpStatus.BAD_REQUEST.value())
+                .data(fieldErrors) // The map of errors goes into the 'data' field
+                .timestamp(LocalDateTime.now())
+                .build();
 
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    // 5. Catch-all for unexpected errors
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "An unexpected error occurred: " + ex.getMessage());
+    }
 
+    // Private helper to keep code DRY (Don't Repeat Yourself)
+    private ResponseEntity<ApiResponse<Void>> buildErrorResponse(HttpStatus status, String statusName, String message) {
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .status(statusName)
+                .message(message)
+                .code(status.value())
+                .data(null)
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(response, status);
+    }
 }

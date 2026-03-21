@@ -25,31 +25,19 @@ class UserServiceTest {
     @Test
     @DisplayName("Success: Should call softDelete when user exists")
     void testDeactivateUser_Success() {
-        // 1. Arrange: Mock the existence check
         when(userRepository.existsById(1L)).thenReturn(true);
-
-        // 2. Act
         userService.deactivateUser(1L);
-
-        // 3. Assert: Verify the custom softDelete method was called
         verify(userRepository, times(1)).softDelete(1L);
-
-        // Safety check: ensure no other delete methods were called
         verify(userRepository, never()).deleteById(anyLong());
     }
 
     @Test
     @DisplayName("Fail: Should throw Exception when user does not exist")
     void testDeactivateUser_NotFound() {
-        // 1. Arrange
         when(userRepository.existsById(99L)).thenReturn(false);
-
-        // 2. Act & Assert
         assertThrows(UserNotFoundException.class, () -> {
             userService.deactivateUser(99L);
         });
-
-        // Verify softDelete was NEVER called for a non-existent user
         verify(userRepository, never()).softDelete(anyLong());
     }
 }

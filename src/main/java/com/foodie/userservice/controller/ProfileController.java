@@ -1,5 +1,6 @@
 package com.foodie.userservice.controller;
 
+import com.foodie.userservice.dto.ApiResponse;
 import com.foodie.userservice.dto.UpdateProfileRequest;
 import com.foodie.userservice.dto.UserResponseDTO;
 import com.foodie.userservice.exception.UserNotFoundException;
@@ -21,35 +22,26 @@ public class ProfileController {
     private final UserRepository userRepository;
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDTO> getMyProfile() {
-        String currentUserEmail = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getMyProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        User user = userRepository.findByEmail(currentUserEmail)
-                .orElseThrow(() -> new UserNotFoundException("User with email " + currentUserEmail + " not found"));
-
-        // FIX: Use the helper method here too!
-        return ResponseEntity.ok(convertToDto(user));
+        UserResponseDTO dto = convertToDto(user);
+        // Wrap in our new standard!
+        return ResponseEntity.ok(ApiResponse.success("Profile fetched successfully", dto));
     }
-
     @PutMapping("/update")
-    public ResponseEntity<UserResponseDTO> updateProfile(@RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateProfile(@RequestBody UpdateProfileRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
 
-        if (request.getName() != null) {
-            user.setName(request.getName());
-        }
-        if (request.getMobile() != null) {
-            user.setMobile(request.getMobile());
-        }
-
+        if (request.getName() != null) user.setName(request.getName());
+        if (request.getMobile() != null) user.setMobile(request.getMobile());
         User updatedUser = userRepository.save(user);
-
-        // Correctly using the helper
-        return ResponseEntity.ok(convertToDto(updatedUser));
+        return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", convertToDto(updatedUser)));
     }
 
     // This is your "Source of Truth" for how a Profile looks

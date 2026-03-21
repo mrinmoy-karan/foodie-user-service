@@ -43,20 +43,6 @@ public class UserService {
         return "User registered successfully!";
     }
 
-    public String loginUser(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-
-
-        // Match raw password with hashed password
-        if (passwordEncoder.matches(request.password(), user.getPassword())) {
-            return jwtService.generateToken(user);
-        } else {
-            return "Invalid Credentials";
-        }
-    }
-
     public void deactivateUser(Long id) {
         // 1. Check if user exists first
         if (!userRepository.existsById(id)) {

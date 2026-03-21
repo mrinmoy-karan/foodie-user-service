@@ -1,7 +1,7 @@
 package com.foodie.userservice.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.foodie.userservice.dto.ErrorResponse;
+import com.foodie.userservice.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
@@ -17,16 +17,16 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        
+
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        ErrorResponse error = new ErrorResponse(
-            "Unauthorized",
-            "Invalid or missing security key",
-            401
-        );
+        ApiResponse<Void> apiResponse = ApiResponse.<Void>builder()
+                .status("Error")
+                .message("Unauthorized: Invalid or missing security key")
+                .code(401)
+                .build();
 
-        new ObjectMapper().writeValue(response.getOutputStream(), error);
+        new ObjectMapper().writeValue(response.getOutputStream(), apiResponse);
     }
 }
