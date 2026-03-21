@@ -5,6 +5,7 @@ import com.foodie.userservice.models.RefreshToken;
 import com.foodie.userservice.security.JwtService;
 import com.foodie.userservice.service.RefreshTokenService;
 import com.foodie.userservice.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Authentication", description = "Login and Registration APIs")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

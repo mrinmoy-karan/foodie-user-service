@@ -7,6 +7,7 @@ import com.foodie.userservice.exception.UserNotFoundException;
 import com.foodie.userservice.models.Role;
 import com.foodie.userservice.models.User;
 import com.foodie.userservice.repository.UserRepository;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Collectors;
 
+@Tag(name = "User Profile", description = "Personal account management APIs")
 @RestController
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor

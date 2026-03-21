@@ -10,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
@@ -54,7 +55,11 @@ public class JwtService {
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser()
+                .verifyWith((SecretKey) getSignKey()) // verifyWith replaces setSigningKey
+                .build()
+                .parseSignedClaims(token)             // parseSignedClaims replaces parseClaimsJws
+                .getPayload();                        // getPayload replaces getBody
         return claimsResolver.apply(claims);
     }
     // Validation logic for the Filter
